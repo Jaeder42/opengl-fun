@@ -8,3 +8,9 @@ cubebuild:
 	gcc example3d.cc -lglut -lGL -o ./dist/cube -lm
 cuberun:
 	./dist/cube
+
+terrainbuild:
+	gcc terrain.cc -lglut -lGLU -lGL -o ./dist/terrain -lm
+terrainrun:
+	./dist/terrain
+
