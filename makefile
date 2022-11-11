@@ -14,3 +14,8 @@ terrainbuild:
 terrainrun:
 	./dist/terrain
 
+snowbuild:
+	gcc snow.cc -lglut -lGLU -lGL -o ./dist/snow -lm
+
+snowrun:
+	./dist/snow

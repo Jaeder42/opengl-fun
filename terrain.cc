@@ -11,7 +11,7 @@ double rX = 0;
 // Rotate Y
 double rY = 0;
 float vertices[100] = {0, 0, 0};
-double points = 200;
+double points = 10;
 double step = 1 / points;
 double width = 700;
 double height = 700;
@@ -58,21 +58,56 @@ void display()
   glRotatef(rX, 1.0, 0.0, 0.0);
   glRotatef(rY, 0.0, 1.0, 0.0);
 
+  // double x;
+  // double z;
+  // double start = -0.5;
+  // // glBegin(GL_POINTS);
+  // for (x = 0; x < points; x++)
+  // {
+
+  //   for (z = 0; z < points; z++)
+  //   {
+  //     glColor3f(x * step / 2, 0, z * step);
+
+  //     drawSquare(start + (x * step), 0, start + (z * step));
+  //   }
+  // }
+  // drawOutline();
+
   double x;
-  double z;
+  double y;
   double start = -0.5;
-  // glBegin(GL_POINTS);
+  int i = 0;
+  int vertSize = 3 * (points * points);
+
+  float coords[vertSize] = {};
+  float colors[vertSize] = {};
   for (x = 0; x < points; x++)
   {
-
-    for (z = 0; z < points; z++)
+    for (y = 0; y < points; y++)
     {
-      glColor3f(x * step / 2, 0, z * step);
+      coords[i] = start + (x * step);
+      coords[i + 1] = start + (y * step);
+      coords[i + 2] = 0;
 
-      drawSquare(start + (x * step), 0, start + (z * step));
+      colors[i] = x * step;
+      colors[i + 2] = y * step;
+      colors[i + 1] = 0;
+      i += 3;
+      // printf("%d\n", vertSize);
     }
   }
-  drawOutline();
+  // float coords[12] = {-0.1, -0.1, 0, -0.1, 0.1, 0, 0.1, 0.1, 0, 0.1, -0.1, 0};
+  // float colors[vertSize] = {0, 0, 0};
+
+  glVertexPointer(3, GL_FLOAT, 0, coords); // Set data type and location.
+  glColorPointer(3, GL_FLOAT, 0, colors);
+
+  glEnableClientState(GL_VERTEX_ARRAY); // Enable use of arrays.
+  glEnableClientState(GL_COLOR_ARRAY);
+
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 100); // Use X vertices, starting with vertex 0.
+
   glFlush();
   glutSwapBuffers();
 }
@@ -102,8 +137,8 @@ void keyboard(int key, int x, int y)
 
 void timer(int value)
 {
-  rX += 1;
-  rY += 2;
+  // rX += 1;
+  // rY += 2;
   glutPostRedisplay();
   glutTimerFunc(10, timer, 1);
 }
@@ -135,7 +170,7 @@ int main(int argc, char **argv)
   glutInitWindowPosition(300, 100);
 
   // Create window
-  glutCreateWindow("Test render");
+  glutCreateWindow("Test terrain render");
 
   // Enable Z-buffer depth test
   glEnable(GL_DEPTH_TEST);
