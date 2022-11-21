@@ -7,42 +7,16 @@
 #include <math.h>
 #include <stdio.h>
 // Rotate X
-double rX = 0;
+double rX = -80;
 // Rotate Y
 double rY = 0;
-float vertices[100] = {0, 0, 0};
-double points = 10;
-double step = 1 / points;
+double rZ = 90;
+const int points = 200;
+double step = (1 / points);
 double width = 700;
 double height = 700;
-
-void drawSquare(double x, double y, double z)
-{
-  glBegin(GL_TRIANGLES);
-  // glColor3f(0.3, 0, 0.6);
-  glVertex3f(x, y, z);
-  glVertex3f(x + step, y, z);
-  glVertex3f(x + step, y, z + step);
-  glEnd();
-
-  glBegin(GL_TRIANGLES);
-  // glColor3f(0.3, 0, 0.3);
-  glVertex3f(x, y, z);
-  glVertex3f(x, y, z + step);
-  glVertex3f(x + step, y, z + step);
-  glEnd();
-}
-
-void drawOutline()
-{
-  glBegin(GL_LINE_LOOP);
-  glColor3f(0.3, 0, 1);
-  glVertex3f(-0.5, 0, -0.5);
-  glVertex3f(-0.5, 0, 0.5);
-  glVertex3f(0.5, 0, 0.5);
-  glVertex3f(0.5, 0, -0.5);
-  glEnd();
-}
+float terrain[points][points];
+double scale = (double)1 / (double)points * 2;
 
 void display()
 {
@@ -53,95 +27,80 @@ void display()
 
   // Reset transformations
   glLoadIdentity();
+  glTranslatef(0, 0, -0.4);
 
   // Rotate when user changes rX and rY
   glRotatef(rX, 1.0, 0.0, 0.0);
   glRotatef(rY, 0.0, 1.0, 0.0);
+  glRotatef(rZ, 0.0, 0.0, 1.0);
 
-  // double x;
-  // double z;
-  // double start = -0.5;
-  // // glBegin(GL_POINTS);
-  // for (x = 0; x < points; x++)
-  // {
+  int x;
+  int y;
 
-  //   for (z = 0; z < points; z++)
-  //   {
-  //     glColor3f(x * step / 2, 0, z * step);
+  double start = -0.5 * scale * points;
 
-  //     drawSquare(start + (x * step), 0, start + (z * step));
-  //   }
-  // }
-  // drawOutline();
-
-  double x;
-  double y;
-  double start = -0.5;
-  int i = 0;
-  int vertSize = 3 * (points * points);
-
-  float coords[vertSize] = {};
-  float colors[vertSize] = {};
-  for (x = 0; x < points; x++)
+  for (y = 0; y < points; y++)
   {
-    for (y = 0; y < points; y++)
+    glColor3f(0.8, 0.8, 0.8);
+    glBegin(GL_TRIANGLE_STRIP);
+    for (x = 0; x < points; x++)
     {
-      coords[i] = start + (x * step);
-      coords[i + 1] = start + (y * step);
-      coords[i + 2] = 0;
-
-      colors[i] = x * step;
-      colors[i + 2] = y * step;
-      colors[i + 1] = 0;
-      i += 3;
-      // printf("%d\n", vertSize);
+      glVertex3f(start + (x * scale), start + y * scale, terrain[x][y]);
+      glVertex3f(start + (x)*scale, start + (y + 1) * scale, terrain[x][y + 1]);
     }
+    glEnd();
   }
-  // float coords[12] = {-0.1, -0.1, 0, -0.1, 0.1, 0, 0.1, 0.1, 0, 0.1, -0.1, 0};
-  // float colors[vertSize] = {0, 0, 0};
-
-  glVertexPointer(3, GL_FLOAT, 0, coords); // Set data type and location.
-  glColorPointer(3, GL_FLOAT, 0, colors);
-
-  glEnableClientState(GL_VERTEX_ARRAY); // Enable use of arrays.
-  glEnableClientState(GL_COLOR_ARRAY);
-
-  glDrawArrays(GL_TRIANGLE_FAN, 0, 100); // Use X vertices, starting with vertex 0.
-
   glFlush();
   glutSwapBuffers();
 }
 
+void reshape()
+{
+
+  for (int i = 0; i < points; i++)
+  {
+    for (int j = 0; j < points; j++)
+    {
+      terrain[i][j] = (rand() % 100) * scale * -0.01;
+    }
+  }
+}
+void stepThroughTerrain()
+{
+  for (int i = 0; i < points - 1; i++)
+  {
+    float tmp[points];
+    for (int x = 0; x < points; x++)
+    {
+      tmp[x] = terrain[i + 1][x];
+    }
+    for (int x = 0; x < points; x++)
+    {
+      terrain[i + 1][x] = terrain[i][x];
+    }
+    for (int x = 0; x < points; x++)
+    {
+      terrain[i][x] = tmp[x];
+    }
+  }
+}
 void keyboard(int key, int x, int y)
 {
-  if (key == GLUT_KEY_RIGHT)
-  {
-    rY += 5;
-  }
-  else if (key == GLUT_KEY_LEFT)
-  {
-    rY -= 5;
-  }
-  else if (key == GLUT_KEY_DOWN)
-  {
-    rX -= 5;
-  }
-  else if (key == GLUT_KEY_UP)
-  {
-    rX += 5;
-  }
-
-  // Request display update
   glutPostRedisplay();
 }
 
 void timer(int value)
 {
   // rX += 1;
-  // rY += 2;
+  // rY += 1;
+  // rZ += 1;
+  stepThroughTerrain();
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
   glutPostRedisplay();
-  glutTimerFunc(10, timer, 1);
+  glutTimerFunc(16, timer, 1);
 }
+
 void reshape(int x, int y)
 {
   if (y == 0 || x == 0)
@@ -152,7 +111,7 @@ void reshape(int x, int y)
   // Angle of view:40 degrees
   // Near clipping plane distance: 0.5
   // Far clipping plane distance: 20.0
-  gluPerspective(0, (GLdouble)x / (GLdouble)y, 0.5, 20.0);
+  gluPerspective(50, (double)x / (double)y, 0.1, 20.0);
   glViewport(0, 0, x, y); // Use the whole window for rendering
   glMatrixMode(GL_MODELVIEW);
 }
@@ -174,13 +133,16 @@ int main(int argc, char **argv)
 
   // Enable Z-buffer depth test
   glEnable(GL_DEPTH_TEST);
+  // Use the whole window for rendering
+
+  glutReshapeFunc(reshape);
 
   // Callback functions
   glutDisplayFunc(display);
   glutSpecialFunc(keyboard);
   glutTimerFunc(10, timer, 1);
-  glutReshapeFunc(reshape);
 
+  reshape();
   // Pass control to GLUT for events
   glutMainLoop();
 
